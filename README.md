@@ -27,11 +27,10 @@ Usage
 -----
 Pdoc will accept a Python module file, package directory or an import path.
 
-    $ pdoc your_project
+    $ pdoc --template-dir pdoc/pdoc/citros_templates/ --pdf your_package.your_module > docs/your_module.md
 
 See `pdoc --help` for more command-line switches and the [documentation]
 for more usage examples.
-
 
 Features
 --------

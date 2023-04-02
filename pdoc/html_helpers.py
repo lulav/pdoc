@@ -153,7 +153,7 @@ class _ToMarkdown:
             # NOTE: Triple-backtick argument names so we skip linkifying them
             ret += f"**```{name.replace(', ', '```**, **```')}```**"
         if type:
-            ret += f' :&ensp;{type}' if ret else type
+            ret += f' :&ensp;{type}' if ret else f'&ensp;{type}'
         ret += f'\n:   {desc}\n\n'
         return ret
 
@@ -364,7 +364,7 @@ class _ToMarkdown:
         doctest blocks so they render as Python code.
         """
         text = _ToMarkdown.DOCTESTS_RE.sub(
-            lambda match: f'```python-repl\n{match.group()}\n```\n', text)
+            lambda match: f'```python\n{match.group()}\n```\n', text)
         return text
 
     @staticmethod
