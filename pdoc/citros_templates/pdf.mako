@@ -73,6 +73,9 @@ Type: `${annot}`
 ---
 # Display h3 headings
 toc_max_heading_level: 3
+sidebar_label: 'Documentation'
+description: 'Documentation'
+hide_title: true
 ---
 
 % for module in modules:
@@ -85,7 +88,7 @@ toc_max_heading_level: 3
     def to_md(text):
         return _to_md(text, module)
 %>
-${title(1, ('Namespace' if module.is_namespace else 'Module') + f' `{module.name}`', module.refname)}
+${title(2, ('Namespace' if module.is_namespace else 'Module') + f' `{module.name}`', module.refname)}
 ${module.docstring | to_md}
 
 % if submodules:
@@ -126,7 +129,7 @@ ${classdef(cls)}
 ${'<details>'}
   ${'<summary>Description</summary>\n'}
 ${cls.docstring | to_md, subh}
-${'</details>\n'}
+
 <%
     class_vars = cls.class_variables(show_inherited_members, sort=sort_identifiers)
     static_methods = cls.functions(show_inherited_members, sort=sort_identifiers)
@@ -136,18 +139,19 @@ ${'</details>\n'}
     subclasses = cls.subclasses()
 %>
         % if mro:
-${title(3, 'Ancestors (in MRO)')}
+${title(4, 'Ancestors')}
             % for c in mro:
 * [${c.refname}](#${c.refname})
             % endfor
         % endif
 
         % if subclasses:
-${title(3, 'Descendants')}
+${title(4, 'Descendants')}
             % for c in subclasses:
 * [${c.refname}](#${c.refname})
             % endfor
         % endif
+${'</details>\n'}
 
         % if class_vars:
 ${title(3, 'Class variables')}
