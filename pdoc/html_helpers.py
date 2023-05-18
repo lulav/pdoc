@@ -150,12 +150,14 @@ class _ToMarkdown:
         assert name or type
         #indent = "&ensp;"*5
         ret = ""
+        #ret1= ""
         if name:
             # NOTE: Triple-backtick argument names so we skip linkifying them
             ret += f"**```{name.replace(', ', '```**, **```')}```**"
+            #ret1 += f"**```{name.replace(', ', '```**, **```')}```**"
         if type:
-            ret += f' :&ensp;{type}' if ret else f'&ensp;{type}'
-        ret += f'\n:   {desc}\n\n'
+            ret += f' :&ensp;{type}' if ret else f'&ensp;{type}' #ret += f' :&ensp;{type}' if ret else f'&ensp;{type}'
+        ret += f'\n:   {desc}\n\n' #ret += f'\n:   {desc}\n\n'
         return ret
 
     @staticmethod
