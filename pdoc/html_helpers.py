@@ -148,13 +148,16 @@ class _ToMarkdown:
         desc = desc or '&nbsp;'
         assert _ToMarkdown._is_indented_4_spaces(desc)
         assert name or type
+        #indent = "&ensp;"*5
         ret = ""
+        #ret1= ""
         if name:
             # NOTE: Triple-backtick argument names so we skip linkifying them
             ret += f"**```{name.replace(', ', '```**, **```')}```**"
+            #ret1 += f"**```{name.replace(', ', '```**, **```')}```**"
         if type:
-            ret += f' :&ensp;{type}' if ret else f'&ensp;{type}'
-        ret += f'\n:   {desc}\n\n'
+            ret += f' :&ensp;{type}' if ret else f'&ensp;{type}' #ret += f' :&ensp;{type}' if ret else f'&ensp;{type}'
+        ret += f'\n:   {desc}\n\n' #ret += f'\n:   {desc}\n\n'
         return ret
 
     @staticmethod

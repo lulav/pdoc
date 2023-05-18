@@ -71,8 +71,11 @@ Type: `${annot}`
 </%def>
 
 ---
-# Display h5 headings
-toc_max_heading_level: 5
+# Display h3 headings
+toc_max_heading_level: 3
+sidebar_label: 'Documentation'
+description: 'Documentation'
+hide_title: true
 ---
 
 % for module in modules:
@@ -85,7 +88,7 @@ toc_max_heading_level: 5
     def to_md(text):
         return _to_md(text, module)
 %>
-${title(1, ('Namespace' if module.is_namespace else 'Module') + f' `{module.name}`', module.refname)}
+${title(2, ('Namespace' if module.is_namespace else 'Module') + f' `{module.name}`', module.refname)}
 ${module.docstring | to_md}
 
 % if submodules:
@@ -100,29 +103,33 @@ ${title(2, 'Variables')}
     % for v in variables:
 ${title(3, f'Variable `{v.name}`', v.refname)}
 ${vartype(v)}
-${v.docstring | to_md, subh, subh}
+${v.docstring | to_md, subh}
     % endfor
 % endif
 
 % if functions:
-${title(2, 'Functions')}
     % for f in functions:
-${title(3, f'Function `{f.name}`', f.refname)}
+${title(2, f'Function `{f.name}`', f.refname)}
 
 ${funcdef(f)}
 
-${f.docstring | to_md, subh, subh}
+${'<details>'}
+  ${'<summary>Description</summary>\n'}
+${f.docstring | to_md, subh}
+${'</details>\n'}
     % endfor
 % endif
 
 % if classes:
-${title(2, 'Classes')}
     % for cls in classes:
-${title(3, f'Class `{cls.name}`', cls.refname)}
+${title(2, f'Class `{cls.name}`', cls.refname)}
 
 ${classdef(cls)}
 
+${'<details>'}
+  ${'<summary>Description</summary>\n'}
 ${cls.docstring | to_md, subh}
+
 <%
     class_vars = cls.class_variables(show_inherited_members, sort=sort_identifiers)
     static_methods = cls.functions(show_inherited_members, sort=sort_identifiers)
@@ -132,7 +139,7 @@ ${cls.docstring | to_md, subh}
     subclasses = cls.subclasses()
 %>
         % if mro:
-${title(4, 'Ancestors (in MRO)')}
+${title(4, 'Ancestors')}
             % for c in mro:
 * [${c.refname}](#${c.refname})
             % endfor
@@ -144,44 +151,49 @@ ${title(4, 'Descendants')}
 * [${c.refname}](#${c.refname})
             % endfor
         % endif
+${'</details>\n'}
 
         % if class_vars:
-${title(4, 'Class variables')}
+${title(3, 'Class variables')}
             % for v in class_vars:
-${title(5, f'Variable `{v.name}`', v.refname)}
+${title(4, f'Variable `{v.name}`', v.refname)}
 ${vartype(v)}
-${v.docstring | to_md, subh, subh}
+${v.docstring | to_md, subh}
             % endfor
         % endif
 
         % if inst_vars:
-${title(4, 'Instance variables')}
+${title(3, 'Instance variables')}
             % for v in inst_vars:
-${title(5, f'Variable `{v.name}`', v.refname)}
+${title(4, f'Variable `{v.name}`', v.refname)}
 ${vartype(v)}
-${v.docstring | to_md, subh, subh}
+${v.docstring | to_md, subh}
             % endfor
         % endif
 
         % if static_methods:
-${title(4, 'Static methods')}
             % for f in static_methods:
-${title(5, f'`Method {f.name}`', f.refname)}
+${title(3, f'`Method {f.name}`', f.refname)}
 
 ${funcdef(f)}
 
-${f.docstring | to_md, subh, subh}
+${'<details>'}
+  ${'<summary>Description</summary>\n'}
+${f.docstring | to_md, subh}
+${'</details>\n'}
             % endfor
         % endif
 
         % if methods:
-${title(4, 'Methods')}
             % for f in methods:
-${title(5, f'Method `{f.name}`', f.refname)}
+${title(3, f'Method `{f.name}`', f.refname)}
 
 ${funcdef(f)}
 
-${f.docstring | to_md, subh, subh}
+${'<details>'}
+  ${'<summary>Description</summary>\n'}
+${f.docstring | to_md, subh}
+${'</details>\n'}
             % endfor
         % endif
     % endfor
