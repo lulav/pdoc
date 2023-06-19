@@ -7,7 +7,9 @@
         name = dobj.qualname + ('()' if isinstance(dobj, pdoc.Function) else '')
         if isinstance(dobj, pdoc.External):
             return name
-        return f'[{name}](#{dobj.refname} "{dobj.refname}")'
+        url = dobj.url_md(relative_to=module, link_prefix=link_prefix,
+                   top_ancestor=not show_inherited_members)
+        return f'[{name}]({url} "{dobj.refname}")'
 
     def _to_md(text, module):
         text = to_markdown(text, docformat=docformat, module=module, link=link)

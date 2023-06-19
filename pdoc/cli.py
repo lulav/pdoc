@@ -302,7 +302,8 @@ class _WebDoc(BaseHTTPRequestHandler):
 
 
 def module_path(m: pdoc.Module, ext: str):
-    return path.join(args.output_dir, *re.sub(r'\.html$', ext, m.url()).split('/'))
+    return path.join(args.output_dir, re.sub(r'\.html$', ext, m.url()).split('/')[-1])
+    # return path.join(args.output_dir, *re.sub(r'\.html$', ext, m.url()).split('/')[-1]) #changed
 
 
 def _quit_if_exists(m: pdoc.Module, ext: str):
@@ -333,7 +334,7 @@ def _open_write_file(filename):
         raise
 
 
-def recursive_write_files(m: pdoc.Module, ext: str, **kwargs):
+def recursive_write_files(m: pdoc.Module, ext: str, md_out: bool, **kwargs):
     assert ext in ('.html', '.md')
     filepath = module_path(m, ext=ext)
 
@@ -344,11 +345,14 @@ def recursive_write_files(m: pdoc.Module, ext: str, **kwargs):
     with _open_write_file(filepath) as f:
         if ext == '.html':
             f.write(m.html(**kwargs))
+        elif ext == '.md' and md_out:
+            rendered_template = pdoc._render_template('/pdf.mako', modules=[m], **kwargs)
+            f.write(rendered_template)
         elif ext == '.md':
             f.write(m.text(**kwargs))
 
     for submodule in m.submodules():
-        recursive_write_files(submodule, ext=ext, **kwargs)
+        recursive_write_files(submodule, ext=ext, md_out = md_out, **kwargs)
 
 
 def _flatten_submodules(modules: Sequence[pdoc.Module]):
@@ -536,7 +540,7 @@ def main(_args=None):
                for module in args.modules]
     pdoc.link_inheritance()
 
-    if args.pdf:
+    if args.pdf and not args.output_dir:
         _print_pdf(modules, **template_config)
         import textwrap
         PANDOC_CMD = textwrap.indent(_PANDOC_COMMAND, '    ')
@@ -572,10 +576,13 @@ or similar, at your own discretion.""",
     for module in modules:
         if args.html:
             _quit_if_exists(module, ext='.html')
-            recursive_write_files(module, ext='.html', **template_config)
+            recursive_write_files(module, ext='.html', md_out = False, **template_config)
+        elif args.output_dir and args.pdf:  # Generate text files
+            _quit_if_exists(module, ext='.md')
+            recursive_write_files(module, ext='.md', md_out = True, **template_config)
         elif args.output_dir:  # Generate text files
             _quit_if_exists(module, ext='.md')
-            recursive_write_files(module, ext='.md', **template_config)
+            recursive_write_files(module, ext='.md', md_out = False, **template_config)
         else:
             sys.stdout.write(module.text(**template_config))
             # Two blank lines between two modules' texts

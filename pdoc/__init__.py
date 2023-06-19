@@ -44,6 +44,10 @@ _URL_MODULE_SUFFIX = '.html'
 _URL_INDEX_MODULE_SUFFIX = '.m.html'  # For modules named literal 'index'
 _URL_PACKAGE_SUFFIX = '/index.html'
 
+_URL_MD_MODULE_SUFFIX = '.md'
+_URL_MD_INDEX_MODULE_SUFFIX = '.m.md'  # For modules named literal 'index'
+_URL_MD_PACKAGE_SUFFIX = '/index.md'
+
 # type.__module__ can be None by the Python spec. In those cases, use this value
 _UNKNOWN_MODULE = '?'
 
@@ -598,6 +602,40 @@ class Doc:
 
     def _url(self):
         return f'{self.module._url()}#{self.refname}'
+    
+    @lru_cache()
+    def url_md(self, relative_to: 'Module' = None, *, link_prefix: str = '',
+            top_ancestor: bool = False) -> str:
+        """
+        Canonical relative URL (including page fragment) for this
+        documentation object.
+
+        Specify `relative_to` (a `pdoc.Module` object) to obtain a
+        relative URL.
+
+        For usage of `link_prefix` see `pdoc.html()`.
+
+        If `top_ancestor` is `True`, the returned URL instead points to
+        the top ancestor in the object's `pdoc.Doc.inherits` chain.
+        """
+        if top_ancestor:
+            self = self._inherits_top()
+
+        if relative_to is None or link_prefix:
+            return link_prefix + self._url_md()
+
+        if self.module.name == relative_to.name:
+            return f'#{self.refname}'
+
+        # Otherwise, compute relative path from current module to link target
+        url = os.path.relpath(self._url_md(), relative_to.url_md()).replace(path.sep, '/')
+        # We have one set of '..' too many
+        if url.startswith('../'):
+            url = url[3:]
+        return url
+
+    def _url_md(self):
+        return f'{self.module._url_md()}#{self.refname}'
 
     def _inherits_top(self):
         """
@@ -974,6 +1012,14 @@ class Module(Doc):
         elif url.endswith('/index'):
             return url + _URL_INDEX_MODULE_SUFFIX
         return url + _URL_MODULE_SUFFIX
+    
+    def _url_md(self):
+        url = self.module.name.replace('.', '/')
+        if self.is_package:
+            return url + _URL_MD_PACKAGE_SUFFIX
+        elif url.endswith('/index'):
+            return url + _URL_MD_INDEX_MODULE_SUFFIX
+        return url + _URL_MD_MODULE_SUFFIX
 
 
 def _getmembers_all(obj: type) -> List[Tuple[str, Any]]:
