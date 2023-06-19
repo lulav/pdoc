@@ -208,7 +208,7 @@ class _ToMarkdown:
                           r'(?: ?: (?P<type>.*))?(?<!\.)$'
                           r'(?P<desc>(?:\n(?: {4}.*|$))*)',
                           _ToMarkdown._numpy_params, body, flags=re.MULTILINE)
-        return f'{section}\n-----\n{body}'
+        return f'---\n{section}\n-----\n{body}'
 
     @staticmethod
     def numpy(text):
@@ -537,8 +537,10 @@ def _linkify(match: Match, *, link: Callable[..., str], module: pdoc.Module, wra
         # Backticks also cannot be used because html returned from `link()`
         # would then become escaped.
         # This finds overlapping matches, https://stackoverflow.com/a/5616910/1090455
-        cleaned = re.sub(r'(_(?=[^>]*?(?:<|$)))', r'\\\1', linked)
-        return f'<code>{cleaned}</code>'
+        cleaned = re.sub(r'(_(?=[^>]*?(?:<|$)))', r'\1', linked)
+        # cleaned = re.sub(r'(_(?=[^>]*?(?:<|$)))', r'\\\1', linked)
+        return f'**{cleaned}**'      #change
+        # return f'<code>{cleaned}</code>'  
     return linked
 
 
