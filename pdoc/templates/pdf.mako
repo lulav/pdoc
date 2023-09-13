@@ -39,6 +39,8 @@ ${('#' * level) + ' ' + string + id}
     returns = show_type_annotations and f.return_annotation() or ''
     if returns:
         returns = ' \N{non-breaking hyphen} ' + returns
+    if 'self' in params:
+        params.remove('self')
 %>
 ${'```python'}
 %if params:
@@ -86,18 +88,23 @@ hide_title: true
     variables = module.variables(sort=sort_identifiers)
     functions = module.functions(sort=sort_identifiers)
     classes = module.classes(sort=sort_identifiers)
-
+    show_submodules = False
+    show_modules = False
     def to_md(text):
         return _to_md(text, module)
 %>
+% if show_submodules:
 ${title(2, ('Namespace' if module.is_namespace else 'Module') + f' `{module.name}`', module.refname)}
+% endif
 ${module.docstring | to_md}
 
 % if submodules:
+% if show_submodules:
 ${title(2, 'Sub-modules')}
     % for m in submodules:
 * [${m.name}](#${m.refname})
     % endfor
+% endif
 % endif
 
 % if variables:
@@ -138,13 +145,16 @@ ${cls.docstring | to_md, subh}
     inst_vars = cls.instance_variables(show_inherited_members, sort=sort_identifiers)
     methods = cls.methods(show_inherited_members, sort=sort_identifiers)
     mro = cls.mro()
+    show_ancestors = False
     subclasses = cls.subclasses()
 %>
         % if mro:
+            % if show_ancestors:
 ${title(4, 'Ancestors')}
-            % for c in mro:
+                % for c in mro:
 * [${c.refname}](#${c.refname})
-            % endfor
+                % endfor
+            % endif
         % endif
 
         % if subclasses:

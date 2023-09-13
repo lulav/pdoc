@@ -140,7 +140,7 @@ class _ToMarkdown:
         # in backticks while skipping common "stopwords" such as 'or', 'of',
         # 'optional' ... See §4 Parameters:
         # https://numpydoc.readthedocs.io/en/latest/format.html#sections
-        type_parts = re.split(r'( *(?: of | or |, *default(?:=|\b)|, *optional\b) *)', type or '')
+        type_parts = re.split(r'( *(?: of | or |, *default(?:=|\b)|, *optional\b, | *\*\*\[.*\]\(.*\)\*\*) *)', type or '')
         type_parts[::2] = [f'`{s}`' if s else s
                            for s in type_parts[::2]]
         type = ''.join(type_parts)

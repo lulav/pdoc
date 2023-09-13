@@ -540,7 +540,7 @@ def main(_args=None):
                for module in args.modules]
     pdoc.link_inheritance()
 
-    if args.pdf and not args.output_dir:
+    if args.pdf and not args.output_dir: # everython is written in one file
         _print_pdf(modules, **template_config)
         import textwrap
         PANDOC_CMD = textwrap.indent(_PANDOC_COMMAND, '    ')
@@ -577,7 +577,7 @@ or similar, at your own discretion.""",
         if args.html:
             _quit_if_exists(module, ext='.html')
             recursive_write_files(module, ext='.html', md_out = False, **template_config)
-        elif args.output_dir and args.pdf:  # Generate text files
+        elif args.output_dir and args.pdf:  # Generate separate text files
             _quit_if_exists(module, ext='.md')
             recursive_write_files(module, ext='.md', md_out = True, **template_config)
         elif args.output_dir:  # Generate text files
