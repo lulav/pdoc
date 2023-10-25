@@ -140,7 +140,8 @@ class _ToMarkdown:
         # in backticks while skipping common "stopwords" such as 'or', 'of',
         # 'optional' ... See §4 Parameters:
         # https://numpydoc.readthedocs.io/en/latest/format.html#sections
-        type_parts = re.split(r'( *(?: of | or |, *default(?:=|\b)|, *optional\b, | *\*\*\[.*\]\(.*\)\*\*) *)', type or '')
+        # type_parts = re.split(r'( *(?: of | or |, *default(?:=|\b)|, *optional\b, | *\*\*\[.*\]\(.*\)\*\*) *)', type or '')
+        type_parts = re.split(r'( *(?: of | or |, *default(?:=|\b)|, *optional\b) *)', type or '')
         type_parts[::2] = [f'`{s}`' if s else s
                            for s in type_parts[::2]]
         type = ''.join(type_parts)
@@ -191,6 +192,8 @@ class _ToMarkdown:
         """
         section, body = match.groups()
         section = section.title()
+        if section == 'Examples':
+            return ''
         if section == 'See Also':
             body = re.sub(r'\n\s{4}\s*', ' ', body)  # Handle line continuation
             body = re.sub(r'^((?:\n?[\w.]* ?: .*)+)|(.*\w.*)',
@@ -208,7 +211,8 @@ class _ToMarkdown:
                           r'(?: ?: (?P<type>.*))?(?<!\.)$'
                           r'(?P<desc>(?:\n(?: {4}.*|$))*)',
                           _ToMarkdown._numpy_params, body, flags=re.MULTILINE)
-        return f'---\n{section}\n-----\n{body}'
+        # return f'---\n{section}\n-----\n{body}'
+        return f'{section}\n-----\n{body}'
 
     @staticmethod
     def numpy(text):
@@ -216,9 +220,43 @@ class _ToMarkdown:
         Convert `text` in numpydoc docstring format to Markdown
         to be further converted later.
         """
-        return re.sub(r'^(\w[\w ]+)\n-{3,}\n'
-                      r'((?:(?!.+\n-+).*$\n?)*)',
-                      _ToMarkdown._numpy_sections, text, flags=re.MULTILINE)
+        pattern_examples = r'^(Examples)\n-{3,}\n((?:(?!.+\n-{3,}).*$\n?)*)'
+        match_examples = re.search(pattern_examples, text, flags=re.MULTILINE)
+        if match_examples:
+            section_examples = match_examples.group(1)  # Group 1 captures "Examples"
+            body_examples = match_examples.group(2)
+        else:
+            section_examples, body_examples  = None, None
+
+        if section_examples is not None:
+            example_section = f'<details>\n  <summary>Examples</summary>\n\n{body_examples}\n</details>\n'
+        else:
+            example_section = ''
+
+        # Remove the "Examples" section from the original text
+        modified_text = re.sub(r'(^Examples\n-{3,}\n((?:(?!.+\n-{3,}).*$\n?)*))', '', text, flags=re.MULTILINE)
+        all_sections = re.sub(r'^(\w[\w ]+)\n-{3,}\n'
+                      r'((?:(?!.+\n-{3,}).*$\n?)*)',
+                      _ToMarkdown._numpy_sections, modified_text, flags=re.MULTILINE)
+        if bool(all_sections.strip()):
+            result = f'<details>\n  <summary>Description</summary>\n\n'+ all_sections+'\n</details>\n'+ example_section
+        else:
+            result = all_sections
+        return result
+        # example_section = ''
+        # all_sections = []
+        # for match in re.finditer(r'^(\w[\w ]+)\n-{3,}\n'
+        #                          r'((?:(?!.+\n-+).*$\n?)*)', 
+        #                          text, flags=re.MULTILINE):
+        #     section, body = match.groups()
+        #     section = section.title()
+        #     if section == 'Examples':
+        #         example_section = f'<details>\n  <summary>Examples</summary>\n\n{body}\n</details>\n'
+        #     else:
+        #         all_sections.append(_ToMarkdown._numpy_sections(section, body))
+        # result = f'<details>\n  <summary>Description</summary>\n\n'+ ''.join(all_sections)+'\n</details>\n'+ example_section
+        # return result
+
 
     @staticmethod
     def _is_indented_4_spaces(txt, _3_spaces_or_less=re.compile(r'\n\s{0,3}\S').search):

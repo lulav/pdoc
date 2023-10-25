@@ -77,9 +77,8 @@ Type: `${annot}`
 ---
 # Display h3 headings
 toc_max_heading_level: 3
-sidebar_label: 'Documentation'
-description: 'Documentation'
 hide_title: true
+description: 'Documentation'
 ---
 
 % for module in modules:
@@ -122,10 +121,7 @@ ${title(2, f'Function `{f.name}`', f.refname)}
 
 ${funcdef(f)}
 
-${'<details>'}
-  ${'<summary>Description</summary>\n'}
 ${f.docstring | to_md, subh}
-${'</details>\n'}
     % endfor
 % endif
 
@@ -135,8 +131,6 @@ ${title(2, f'Class `{cls.name}`', cls.refname)}
 
 ${classdef(cls)}
 
-${'<details>'}
-  ${'<summary>Description</summary>\n'}
 ${cls.docstring | to_md, subh}
 
 <%
@@ -163,7 +157,6 @@ ${title(4, 'Descendants')}
 * [${c.refname}](#${c.refname})
             % endfor
         % endif
-${'</details>\n'}
 
         % if class_vars:
 ${title(3, 'Class variables')}
@@ -185,14 +178,11 @@ ${v.docstring | to_md, subh}
 
         % if static_methods:
             % for f in static_methods:
-${title(3, f'`Method {f.name}`', f.refname)}
+${title(3, f'Method `{f.name}`', f.refname)}
 
 ${funcdef(f)}
 
-${'<details>'}
-  ${'<summary>Description</summary>\n'}
 ${f.docstring | to_md, subh}
-${'</details>\n'}
             % endfor
         % endif
 
@@ -202,10 +192,7 @@ ${title(3, f'Method `{f.name}`', f.refname)}
 
 ${funcdef(f)}
 
-${'<details>'}
-  ${'<summary>Description</summary>\n'}
 ${f.docstring | to_md, subh}
-${'</details>\n'}
             % endfor
         % endif
     % endfor
