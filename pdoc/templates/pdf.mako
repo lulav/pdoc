@@ -159,7 +159,7 @@ ${title(4, 'Descendants')}
         % endif
 
         % if class_vars:
-${title(3, 'Class variables')}
+${title(2, 'Class variables')}
             % for v in class_vars:
 ${title(4, f'Variable `{v.name}`', v.refname)}
 ${vartype(v)}
@@ -168,7 +168,7 @@ ${v.docstring | to_md, subh}
         % endif
 
         % if inst_vars:
-${title(3, 'Instance variables')}
+${title(2, 'Instance variables')}
             % for v in inst_vars:
 ${title(4, f'Variable `{v.name}`', v.refname)}
 ${vartype(v)}
@@ -178,7 +178,7 @@ ${v.docstring | to_md, subh}
 
         % if static_methods:
             % for f in static_methods:
-${title(3, f'Method `{f.name}`', f.refname)}
+${title(2, f'Method `{f.name}`', f.refname)}
 
 ${funcdef(f)}
 
@@ -188,7 +188,7 @@ ${f.docstring | to_md, subh}
 
         % if methods:
             % for f in methods:
-${title(3, f'Method `{f.name}`', f.refname)}
+${title(2, f'Method `{f.name}`', f.refname)}
 
 ${funcdef(f)}
 

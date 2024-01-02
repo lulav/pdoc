@@ -130,7 +130,7 @@ class _ToMarkdown:
     will come in handy.
     """
     @staticmethod
-    def _deflist(name, type, desc):
+    def _deflist(name, type, desc, make_table = False):
         """
         Returns `name`, `type`, and `desc` formatted as a
         Python-Markdown definition list entry. See also:
@@ -150,24 +150,43 @@ class _ToMarkdown:
         assert _ToMarkdown._is_indented_4_spaces(desc)
         assert name or type
         #indent = "&ensp;"*5
-        ret = ""
         #ret1= ""
-        if name:
-            # NOTE: Triple-backtick argument names so we skip linkifying them
-            ret += f"**```{name.replace(', ', '```**, **```')}```**"
-            #ret1 += f"**```{name.replace(', ', '```**, **```')}```**"
-        if type:
-            ret += f' :&ensp;{type}' if ret else f'&ensp;{type}' #ret += f' :&ensp;{type}' if ret else f'&ensp;{type}'
-        ret += f'\n:   {desc}\n\n' #ret += f'\n:   {desc}\n\n'
+        if make_table:
+            if name:
+                # NOTE: Triple-backtick argument names so we skip linkifying them
+                ret_name = f"**```{name.replace(', ', '```**, **```')}```**"
+            else:
+                ret_name = ''
+            if type:
+                ret_type = f'{type}'
+            else:
+                ret_type = ''
+            
+            ret_desc = re.sub(r'( {4}- )|(^- )', '      &#8226; ', desc)
+            ret_desc = ret_desc.replace('\n', '<br />')
+
+            ret=f"|{ret_name}|{ret_type}|{ret_desc}"
+
+        else:
+            ret = ""
+            if name:
+                # NOTE: Triple-backtick argument names so we skip linkifying them
+                ret += f"**```{name.replace(', ', '```**, **```')}```**"
+                #ret1 += f"**```{name.replace(', ', '```**, **```')}```**"
+            if type:
+                ret += f' :&ensp;{type}' if ret else f'&ensp;{type}' #ret += f' :&ensp;{type}' if ret else f'&ensp;{type}'
+            
+            ret += f'\n:   {desc}\n\n' #ret += f'\n:   {desc}\n\n'
+
         return ret
 
     @staticmethod
-    def _numpy_params(match):
+    def _numpy_params(match, make_table = False):
         """ Converts NumpyDoc parameter (etc.) sections into Markdown. """
         name, type, desc = match.group("name", "type", "desc")
         type = type or match.groupdict().get('just_type', None)
         desc = desc.strip()
-        return _ToMarkdown._deflist(name, type, desc)
+        return _ToMarkdown._deflist(name, type, desc, make_table = make_table)
 
     @staticmethod
     def _numpy_seealso(match):
@@ -203,14 +222,16 @@ class _ToMarkdown:
                           r'(?: ?: (?P<type>.*))|'
                           r'(?P<just_type>\w[^\n`*]*))(?<!\.)$'
                           r'(?P<desc>(?:\n(?: {4}.*|$))*)',
-                          _ToMarkdown._numpy_params, body, flags=re.MULTILINE)
+                          lambda line: _ToMarkdown._numpy_params(line, make_table = True), body, flags=re.MULTILINE)
+            body = "Name|Type|Description\n--|--|--\n" + body+"\n"
         elif section in ('Parameters', 'Receives', 'Other Parameters',
                          'Arguments', 'Args', 'Attributes'):
             name = r'(?:\w|\{\w+(?:,\w+)+\})+'  # Support curly brace expansion
             body = re.sub(r'^(?P<name>\*{0,2}' + name + r'(?:, \*{0,2}' + name + r')*)'
                           r'(?: ?: (?P<type>.*))?(?<!\.)$'
                           r'(?P<desc>(?:\n(?: {4}.*|$))*)',
-                          _ToMarkdown._numpy_params, body, flags=re.MULTILINE)
+                          lambda line: _ToMarkdown._numpy_params(line, make_table = True), body, flags=re.MULTILINE)
+            body = "Name|Type|Description\n--|--|--\n" + body+"\n"
         # return f'---\n{section}\n-----\n{body}'
         return f'{section}\n-----\n{body}'
 
@@ -353,7 +374,10 @@ class _ToMarkdown:
                 title += f':&ensp;{value}'
 
         text = _ToMarkdown.indent(indent + '    ', text, clean_first=True)
-        return f'{indent}!!! {type} "{title}"\n{text}\n'
+        if type in ['versionchanged', 'versionadded', 'deprecated']:
+            return f':::warningWarning\n\n{indent}!!! {type} "{title}"\n{text}\n\n:::'
+        else:
+            return f'{indent}!!! {type} "{title}"\n{text}\n'
 
     @staticmethod
     def admonitions(text, module, limit_types=None):
